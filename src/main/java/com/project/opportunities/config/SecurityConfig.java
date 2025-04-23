@@ -92,6 +92,7 @@ public class SecurityConfig {
                 "https://pasha1932.github.io/",
                 "http://localhost:8080",
                 "https://backend-api.space"
+                "https://charity-website-iota.vercel.app"
         ));
         configuration.setAllowedMethods(
                 Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"));
