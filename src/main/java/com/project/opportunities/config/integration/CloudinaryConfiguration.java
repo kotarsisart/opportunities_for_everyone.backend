@@ -1,28 +1,62 @@
-package com.project.opportunities.config.integration;
+package com.project.opportunities.service.integration.storage.impl;
 
 import com.cloudinary.Cloudinary;
-import com.cloudinary.utils.ObjectUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import com.project.opportunities.exception.CloudinaryUploadPhotoException;
+import com.project.opportunities.service.integration.storage.interfaces.CloudinaryService;
+import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-@Configuration
-public class CloudinaryConfiguration {
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
-    @Value("${cloudinary.cloud_name}")
-    private String cloudName;
+@Service
+@Slf4j
+public class CloudinaryServiceImpl implements CloudinaryService {
 
-    @Value("${cloudinary.api_key}")
-    private String apiKey;
+    @Resource
+    private Cloudinary cloudinary;
 
-    @Value("${cloudinary.api_secret}")
-    private String apiSecret;
+    @Override
+    public String uploadFile(MultipartFile file, String folderName) {
+        log.info("Starting file upload to folder: {}", folderName);
+        log.debug("File details - name: {}, size: {} bytes, content type: {}",
+                file.getOriginalFilename(),
+                file.getSize(),
+                file.getContentType());
 
-    @Bean
-    public Cloudinary cloudinary() {
-        return new Cloudinary(ObjectUtils.asMap(
-                "cloud_name", cloudName,
-                "api_key", apiKey,
-                "api_secret", apiSecret));
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            log.error("Invalid file type attempted to upload: {}", contentType);
+            throw new CloudinaryUploadPhotoException("Invalid file type. Only images are allowed.");
+        }
+
+        try {
+            Map<String, Object> options = new HashMap<>();
+            options.put("folder", folderName);
+
+            log.debug("Uploading file to Cloudinary...");
+            Map<String, Object> uploadedFile = castToMap(cloudinary.uploader().upload(file.getBytes(), options));
+
+            String publicId = (String) uploadedFile.get("public_id");
+            String url = cloudinary.url().secure(true).generate(publicId);
+
+            log.info("Successfully uploaded file. Public ID: {}", publicId);
+            log.debug("File URL: {}", url);
+
+            return url;
+
+        } catch (IOException e) {
+            log.error("Failed to upload file: {}", e.getMessage(), e);
+            throw new CloudinaryUploadPhotoException("Failed to upload file");
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> castToMap(Object rawMap) {
+        return (Map<String, Object>) rawMap;
     }
 }
+// test line
