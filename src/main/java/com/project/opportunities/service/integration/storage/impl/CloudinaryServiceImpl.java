@@ -15,8 +15,14 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 public class CloudinaryServiceImpl implements CloudinaryService {
     @Resource
-    private Cloudinary cloudinary;
-
+    public Cloudinary cloudinary() {
+        return new Cloudinary(ObjectUtils.asMap(
+                "cloud_name", cloudName,
+                "api_key", apiKey,
+                "api_secret", apiSecret
+        ));
+    }
+}
     @Override
     public String uploadFile(MultipartFile file, String folderName) {
         log.info("Starting file upload to folder: {}", folderName);
