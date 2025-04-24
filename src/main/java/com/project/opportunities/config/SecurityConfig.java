@@ -87,12 +87,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(List.of(
-                "http://localhost:[*]",
-                "http://127.0.0.1:[*]",
-                "https://pasha1932.github.io/",
-                "http://localhost:8080",
-                "https://backend-api.space",
-                "https://charity-website-iota.vercel.app"
+                  "https://charity-website-iota.vercel.app"
         ));
         configuration.setAllowedMethods(
                 Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"));
