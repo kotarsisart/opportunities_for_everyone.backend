@@ -4,25 +4,21 @@ import com.cloudinary.Cloudinary;
 import com.project.opportunities.exception.CloudinaryUploadPhotoException;
 import com.project.opportunities.service.integration.storage.interfaces.CloudinaryService;
 import jakarta.annotation.Resource;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 @Slf4j
 public class CloudinaryServiceImpl implements CloudinaryService {
+
     @Resource
-    public Cloudinary cloudinary() {
-        return new Cloudinary(ObjectUtils.asMap(
-                "cloud_name", cloudName,
-                "api_key", apiKey,
-                "api_secret", apiSecret
-        ));
-    }
-}
+    private Cloudinary cloudinary;
+
     @Override
     public String uploadFile(MultipartFile file, String folderName) {
         log.info("Starting file upload to folder: {}", folderName);
@@ -36,13 +32,13 @@ public class CloudinaryServiceImpl implements CloudinaryService {
             log.error("Invalid file type attempted to upload: {}", contentType);
             throw new CloudinaryUploadPhotoException("Invalid file type. Only images are allowed.");
         }
+
         try {
             Map<String, Object> options = new HashMap<>();
             options.put("folder", folderName);
 
-            log.debug("Uploading file to Cloudinary");
-            Map<String, Object> uploadedFile
-                    = castToMap(cloudinary.uploader().upload(file.getBytes(), options));
+            log.debug("Uploading file to Cloudinary...");
+            Map<String, Object> uploadedFile = castToMap(cloudinary.uploader().upload(file.getBytes(), options));
 
             String publicId = (String) uploadedFile.get("public_id");
             String url = cloudinary.url().secure(true).generate(publicId);
