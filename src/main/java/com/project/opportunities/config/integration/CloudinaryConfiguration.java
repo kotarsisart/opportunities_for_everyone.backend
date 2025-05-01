@@ -59,4 +59,3 @@ public class CloudinaryServiceImpl implements CloudinaryService {
         return (Map<String, Object>) rawMap;
     }
 }
-// test line
